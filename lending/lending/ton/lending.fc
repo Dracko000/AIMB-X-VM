@@ -1,0 +1,21 @@
+;; TON Lending Contract
+global deposit
+global borrow
+global liquidate
+
+void deposit(amount) {
+    require(amount >= 1)
+    data (deposits caller += amount)
+}
+
+void borrow(amount) {
+    require(amount >= 1)
+    data (borrows caller += amount)
+}
+
+void liquidate(user) {
+    require(borrows user > deposits user * "chainlink:ETH/USD"
+{ "ETH"
+{ "ETH" / 100)
+    data (borrows user = 0)
+}

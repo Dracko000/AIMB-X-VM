@@ -1,0 +1,72 @@
+contract PerpetualFutures {
+    owner: "0xAdminAddress"
+    supportedAssets: ["ETH", "BTC", "SOL"]
+    priceOracle: {
+        "ETH": "chainlink:ETH/USD",
+        "BTC": "chainlink:BTC/USD",
+        "SOL": "chainlink:SOL/USD"
+    }
+    fundingRate: 0.01  // Funding Rate Per Jam
+    maintenanceMargin: { "ETH": 10, "BTC": 12, "SOL": 8 }  // % Minimum Margin
+    leverage: { "ETH": 10, "BTC": 20, "SOL": 15 }  // Maksimum Leverage
+}  
+
+function openPosition(user, asset, amount, leverage) {
+    require(asset in supportedAssets, "Aset tidak didukung")
+    price = getPriceFromOracle(asset)
+    require(price > 0, "Harga tidak valid dari oracle")
+
+    maxLeverage = leverage[asset]
+    require(leverage <= maxLeverage, "Leverage melebihi batas")
+
+    marginRequired = (amount / leverage) * price
+    userMargin[user][asset] += marginRequired
+    userPositions[user][asset] = { "amount": amount, "leverage": leverage }
+
+    emit OpenPosition(user, asset, amount, leverage, marginRequired)
+}  
+
+function closePosition(user, asset) {
+    require(userPositions[user][asset], "Tidak ada posisi aktif")
+
+    entryPrice = getEntryPrice(user, asset)
+    currentPrice = getPriceFromOracle(asset)
+    pnl = calculatePnL(user, asset, entryPrice, currentPrice)
+
+    userBalance[user] += pnl
+    delete userPositions[user][asset]
+
+    emit ClosePosition(user, asset, pnl)
+}  
+
+function liquidate(user, asset) {
+    require(userPositions[user][asset], "Tidak ada posisi aktif")
+
+    entryPrice = getEntryPrice(user, asset)
+    currentPrice = getPriceFromOracle(asset)
+    margin = userMargin[user][asset]
+
+    if (calculateMarginLevel(user, asset, entryPrice, currentPrice) < maintenanceMargin[asset]) {
+        delete userPositions[user][asset]
+        userBalance[user] -= margin  // Margin dihapus sebagai penalti
+
+        emit Liquidation(user, asset, margin)
+    }
+}  
+
+function getPriceFromOracle(asset) {
+    oracleAddress = priceOracle[asset]
+    return queryOracle(oracleAddress)
+}  
+
+function calculatePnL(user, asset, entryPrice, currentPrice) {
+    position = userPositions[user][asset]
+    pnl = (currentPrice - entryPrice) * position.amount * position.leverage
+    return pnl
+}  
+
+function calculateMarginLevel(user, asset, entryPrice, currentPrice) {
+    pnl = calculatePnL(user, asset, entryPrice, currentPrice)
+    margin = userMargin[user][asset]
+    return (margin + pnl) / margin * 100
+}

@@ -1,0 +1,5 @@
+contract SwapContract {
+    tokenA: "ETH",
+    tokenB: "USDC",
+    fee: 1
+}

@@ -1,0 +1,6 @@
+contract TokenContract {
+    name: "MyToken",
+    symbol: "MTK",
+    decimals: 18,
+    totalSupply: 1000000
+}

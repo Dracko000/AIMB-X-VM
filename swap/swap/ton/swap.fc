@@ -1,0 +1,8 @@
+;; TON Swap Contract
+global execute_swap
+
+data (fee 1)
+
+void execute_swap(int amount_in) {
+    return amount_in * (100 - fee) / 100;
+}

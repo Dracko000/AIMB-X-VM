@@ -1,0 +1,17 @@
+;; TON Token Contract
+global get_name
+global get_symbol
+global get_decimals
+global get_total_supply
+
+;; Data storage
+data (name "MyToken")
+data (symbol "MTK")
+data (decimals 18,)
+data (total_supply 1000000)
+
+;; Getter functions
+void get_name() { return name }
+void get_symbol() { return symbol }
+void get_decimals() { return decimals }
+void get_total_supply() { return total_supply }

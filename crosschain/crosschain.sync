@@ -1,0 +1,9 @@
+contract CrossChainMessage {
+    function sendMessage(address to, string message) public {
+        relayer.send(to, message);
+    }
+
+    function receiveMessage(string message) public {
+        emit MessageReceived(msg.sender, message);
+    }
+}

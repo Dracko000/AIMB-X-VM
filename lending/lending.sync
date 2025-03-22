@@ -1,0 +1,73 @@
+contract LendingProtocol {
+    owner: "0xAdminAddress"
+    collateral: ["ETH", "BTC", "USDC"]  // Collateral yang didukung
+    collateralOracle: {
+        "ETH": "chainlink:ETH/USD",
+        "BTC": "chainlink:BTC/USD",
+        "USDC": "chainlink:USDC/USD"
+    }
+    loanAsset: "USDT"
+    maxLTV: { "ETH": 75, "BTC": 65, "USDC": 90 }  // % Maksimal yang bisa dipinjam
+    liquidationThreshold: { "ETH": 85, "BTC": 75, "USDC": 95 }
+    interestRateBase: 3
+    interestRateDynamic: true  // Jika true, bunga akan menyesuaikan kondisi pasar
+}
+
+function depositCollateral(user, asset, amount) {
+    require(asset in collateral, "Collateral tidak didukung")
+    price = getPriceFromOracle(asset)
+    require(price > 0, "Harga tidak valid dari oracle")
+    
+    valueInUSD = amount * price
+    userCollaterals[user][asset] += valueInUSD
+    emit Deposit(user, asset, valueInUSD)
+}
+
+function borrow(user, amount) {
+    require(userCollaterals[user], "Belum ada collateral")
+    totalValue = calculateTotalCollateral(user)
+    maxBorrow = totalValue * (maxLTV[userCollateralType] / 100)
+
+    require(amount <= maxBorrow, "Pinjaman melebihi batas LTV")
+    userLoans[user] += amount
+    emit Borrow(user, amount)
+}
+
+function repay(user, amount) {
+    require(userLoans[user] > 0, "Tidak ada pinjaman aktif")
+    userLoans[user] -= amount
+    emit Repay(user, amount)
+}
+
+function liquidate(user) {
+    totalValue = calculateTotalCollateral(user)
+    loanValue = userLoans[user]
+    
+    if (loanValue / totalValue * 100 > liquidationThreshold[userCollateralType]) {
+        collateralToLiquidate = loanValue / getPriceFromOracle(userCollateralType)
+        userCollaterals[user][userCollateralType] -= collateralToLiquidate
+        userLoans[user] = 0
+        emit Liquidation(user, collateralToLiquidate)
+    }
+}
+
+function getPriceFromOracle(asset) {
+    oracleAddress = collateralOracle[asset]
+    return queryOracle(oracleAddress)  // Mengambil harga dari oracle
+}
+
+function calculateTotalCollateral(user) {
+    totalValue = 0
+    for (asset in userCollaterals[user]) {
+        price = getPriceFromOracle(asset)
+        totalValue += userCollaterals[user][asset] * price
+    }
+    return totalValue
+}
+
+function adjustInterestRate() {
+    if (interestRateDynamic) {
+        marketCondition = getMarketCondition()  // Data dari oracle atau DeFi index
+        interestRateBase = 3 + marketCondition
+    }
+}

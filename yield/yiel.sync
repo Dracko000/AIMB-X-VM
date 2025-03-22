@@ -1,0 +1,67 @@
+contract YieldFarming {
+    owner: "0xAdminAddress"
+    rewardToken: "YIELD"             // Token reward untuk farming
+    stakingTokens: ["ETH", "USDC"]   // Token yang bisa di-stake
+    rewardRate: 0.1                  // Reward 10% per tahun
+    minStake: 100                     // Minimum stake dalam token
+    lockupPeriod: 30                  // Waktu lock-up dalam hari
+    withdrawalFee: 0.005              // 0.5% fee untuk penarikan awal
+
+    pools: {
+        "ETH": {
+            apr: 8.5,                 // APR untuk staking ETH
+            totalStaked: 0,
+            users: {}
+        },
+        "USDC": {
+            apr: 12.0,                // APR untuk staking USDC
+            totalStaked: 0,
+            users: {}
+        }
+    }
+}
+
+function stake(user, token, amount) {
+    require(token in stakingTokens, "Token tidak didukung")
+    require(amount >= minStake, "Jumlah stake kurang dari minimum")
+    
+    pools[token].totalStaked += amount
+    pools[token].users[user] = {
+        amount: amount,
+        startTime: now
+    }
+    
+    emit Stake(user, token, amount)
+}
+
+function unstake(user, token) {
+    require(user in pools[token].users, "User belum staking")
+    
+    stakeInfo = pools[token].users[user]
+    duration = now - stakeInfo.startTime
+    
+    reward = (stakeInfo.amount * pools[token].apr / 100) * (duration / 365)
+    
+    if (duration < lockupPeriod) {
+        fee = stakeInfo.amount * withdrawalFee
+        finalAmount = stakeInfo.amount - fee
+    } else {
+        finalAmount = stakeInfo.amount
+    }
+    
+    pools[token].totalStaked -= stakeInfo.amount
+    delete pools[token].users[user]
+    
+    emit Unstake(user, token, finalAmount, reward)
+}
+
+function claimRewards(user, token) {
+    require(user in pools[token].users, "User belum staking")
+    
+    stakeInfo = pools[token].users[user]
+    duration = now - stakeInfo.startTime
+    
+    reward = (stakeInfo.amount * pools[token].apr / 100) * (duration / 365)
+    
+    emit Claim(user, token, reward)
+}

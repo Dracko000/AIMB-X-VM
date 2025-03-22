@@ -1,0 +1,27 @@
+;; TON Staking Contract
+
+global stake
+global claim_rewards
+global set_reward_token
+
+;; Data storage
+data (min_stake 10,)
+data (max_stake 10000,)
+data (reward_rate 0.01,)
+data (reward_token null)
+
+void set_reward_token(new_reward_token) {
+    data (reward_token = new_reward_token)
+}
+
+void stake(amount) {
+    require(amount >= min_stake && amount <= max_stake)
+    data (stakes caller += amount)
+    data (rewards caller += amount * reward_rate)
+}
+
+void claim_rewards() {
+    require(reward_token != null)
+    data (caller_rewards = rewards caller)
+    send(caller, caller_rewards)
+}

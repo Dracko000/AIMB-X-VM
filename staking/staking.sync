@@ -1,0 +1,7 @@
+contract StakingContract {
+    name: "StakingContract",
+    token: "STK",
+    rewardRate: 0.01,
+    minStake: 10,
+    maxStake: 10000,
+}
