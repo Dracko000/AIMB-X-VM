@@ -19,9 +19,10 @@ Here, developers can create smart contracts in various blockchains with just one
 
 git clone https://github.com/Dracko000/AIMB-X-VM.git
 
-2️⃣ IVM usage
+2️⃣ VM usage
 
-Go into a folder like the token/swap folder or another, change the .sync code to what you want.
+Go into a folder like the token/swap
+folder or another, change the .sync code to what you want.
 
 
 ---
@@ -76,6 +77,3 @@ This project is licensed under the MIT License – Feel free to use and modify w
 
 
 ---
-
-Let me know if you want to add more details, such as diagrams, API call examples, or a whitepaper link!
-
