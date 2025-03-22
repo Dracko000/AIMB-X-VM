@@ -1,8 +1,3 @@
-Here’s an English version of the README.md for your project:
-
-
----
-
 🚀 .sync
 
 Short Description:
